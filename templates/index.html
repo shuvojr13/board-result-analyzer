@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bangladesh SSC/HSC Result Extractor | Automated Scraper</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-light">
+
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark-navy shadow-sm">
+        <div class="container py-1">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+                <span class="brand-icon"><i class="bi bi-mortarboard-fill"></i></span>
+                <div>
+                    <span class="fw-bold tracking-tight">Board Result Analyzer</span>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-2 fs-8">v1.1</span>
+                </div>
+            </a>
+            <div class="ms-auto d-flex align-items-center gap-3">
+                <a href="/sample-csv" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                    <i class="bi bi-file-earmark-arrow-down me-1"></i> Sample CSV
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="container my-4 my-md-5">
+
+        <!-- Page Header -->
+        <div class="text-center mb-4">
+            <h1 class="fw-bold text-dark mb-2">Bangladesh Education Board Result Extractor</h1>
+            <p class="text-muted mx-auto max-w-700">
+                Automated result extraction and marksheet viewer powered by <span class="badge bg-light text-dark border">educationboardresults.gov.bd</span>. 
+                Perform bulk roll extraction via CSV upload or check individual student results instantly with automatic captcha solving.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Left Column: Form & Configuration -->
+            <div class="col-lg-5">
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-sliders2 text-primary fs-5"></i>
+                            <h5 class="fw-bold mb-0">Extraction Settings</h5>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <!-- Shared Examination Dropdown -->
+                        <div class="mb-3">
+                            <label for="exam" class="form-label fw-semibold text-secondary fs-7">EXAMINATION</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-journal-bookmark"></i></span>
+                                <select class="form-select border-start-0" id="exam" name="exam" required>
+                                    <option value="ssc" selected>SSC / Dakhil / Equivalent</option>
+                                    <option value="ssc_voc">SSC (Vocational)</option>
+                                    <option value="hsc">HSC / Alim / Equivalent</option>
+                                    <option value="hsc_voc">HSC (Vocational)</option>
+                                    <option value="hsc_hbm">HSC (B.M.)</option>
+                                    <option value="dakhil">Dakhil</option>
+                                    <option value="jsc">JSC / JDC</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Shared Year & Board Dropdowns -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label for="year" class="form-label fw-semibold text-secondary fs-7">YEAR</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar-event"></i></span>
+                                    <select class="form-select border-start-0" id="year" name="year" required>
+                                        <option value="2025" selected>2025</option>
+                                        <option value="2024">2024</option>
+                                        <option value="2023">2023</option>
+                                        <option value="2022">2022</option>
+                                        <option value="2021">2021</option>
+                                        <option value="2020">2020</option>
+                                        <option value="2019">2019</option>
+                                        <option value="2018">2018</option>
+                                        <option value="2017">2017</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <label for="board" class="form-label fw-semibold text-secondary fs-7">BOARD</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-geo-alt"></i></span>
+                                    <select class="form-select border-start-0" id="board" name="board" required>
+                                        <option value="comilla" selected>Cumilla (Fast Server ⚡)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dedicated Server Info Banner for Cumilla Board HSC -->
+                        <div id="cumillaHscAlert" class="alert alert-success d-flex align-items-center py-2 px-3 mb-3 rounded-3 border-0 shadow-sm" style="display: none;">
+                            <i class="bi bi-lightning-charge-fill fs-4 text-success me-2"></i>
+                            <div>
+                                <div class="fw-bold small text-success">⚡ Cumilla Board HSC Fast Server Active</div>
+                                <div class="text-secondary" style="font-size: 0.8rem;">
+                                    Powered by <a href="https://hscresult.comillaboard.gov.bd/" target="_blank" class="fw-semibold text-success text-decoration-underline">hscresult.comillaboard.gov.bd</a>.
+                                    Only <strong>Roll number</strong> is needed. Registration & Captcha are NOT required!
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mode Switcher Tabs -->
+                        <label class="form-label fw-semibold text-secondary fs-7 mb-2">EXTRACTION MODE</label>
+                        <ul class="nav nav-pills nav-fill mb-3 p-1 bg-light rounded-3 border" id="modeTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active rounded-2 fw-semibold fs-7 py-2" id="bulk-tab" data-bs-toggle="pill" data-bs-target="#bulkMode" type="button" role="tab" aria-selected="true">
+                                    <i class="bi bi-file-earmark-spreadsheet me-1"></i> Bulk CSV Upload
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link rounded-2 fw-semibold fs-7 py-2" id="individual-tab" data-bs-toggle="pill" data-bs-target="#individualMode" type="button" role="tab" aria-selected="false">
+                                    <i class="bi bi-person-badge me-1"></i> Individual Check
+                                </button>
+                            </li>
+                        </ul>
+
+                        <!-- Tab Panes -->
+                        <div class="tab-content" id="modeTabsContent">
+                            <!-- TAB 1: BULK FILE UPLOAD -->
+                            <div class="tab-pane fade show active" id="bulkMode" role="tabpanel">
+                                <form id="bulkForm">
+                                    <div class="mb-3">
+                                        <div class="drop-zone p-4 text-center rounded-3 border-dashed" id="dropZone">
+                                            <i class="bi bi-cloud-arrow-up-fill fs-1 text-primary mb-2 d-block"></i>
+                                            <span class="fw-semibold text-dark d-block">Drag & drop your CSV or Excel here</span>
+                                            <span class="text-muted small">Must contain <code>Roll</code> column (<code>Registration</code> is optional)</span>
+                                            <input type="file" id="fileInput" name="file" accept=".csv, .xlsx, .xls" class="d-none">
+                                            <div class="mt-3">
+                                                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="document.getElementById('fileInput').click()">
+                                                    Browse File
+                                                </button>
+                                            </div>
+                                            <div id="fileInfo" class="mt-2 text-success small fw-medium d-none">
+                                                <i class="bi bi-check-circle-fill me-1"></i> <span id="fileName"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="submit" id="submitBulkBtn" class="btn btn-primary w-100 py-2 rounded-3 fw-semibold shadow-sm">
+                                        <i class="bi bi-play-circle-fill me-1"></i> Start Bulk Extraction
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- TAB 2: INDIVIDUAL STUDENT CHECK -->
+                            <div class="tab-pane fade" id="individualMode" role="tabpanel">
+                                <form id="individualForm">
+                                    <div class="mb-3">
+                                        <label for="indRoll" class="form-label fw-semibold text-secondary fs-7">ROLL NUMBER</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-hash"></i></span>
+                                            <input type="text" class="form-control border-start-0" id="indRoll" name="roll" placeholder="e.g. 160000" required pattern="\d+" maxlength="12">
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="indReg" class="form-label fw-semibold text-secondary fs-7">REGISTRATION NUMBER</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-card-text"></i></span>
+                                            <input type="text" class="form-control border-start-0" id="indReg" name="reg" placeholder="e.g. 1512345678 (optional)" pattern="\d*" maxlength="15">
+                                        </div>
+                                        <small id="regHelpText" class="text-muted fs-8">Optional. For Cumilla HSC, result is found automatically with Roll only.</small>
+                                    </div>
+
+                                    <button type="submit" id="submitIndBtn" class="btn btn-success w-100 py-2 rounded-3 fw-semibold shadow-sm">
+                                        <i class="bi bi-search me-1"></i> Check Single Result
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Shared Simulation / Demo Mode Toggle -->
+                        <div class="form-check form-switch mt-4 p-3 bg-light rounded-3 border">
+                            <input class="form-check-input ms-0 me-2" type="checkbox" role="switch" id="demoMode" name="demo_mode" value="true">
+                            <label class="form-check-label fw-semibold text-dark" for="demoMode">
+                                Test / Demo Mode
+                            </label>
+                            <small class="text-muted d-block mt-1">
+                                Enable only if you want to test with simulated/dummy results without querying the official Education Board servers.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Status, Marksheet & Live Preview -->
+            <div class="col-lg-7">
+
+                <!-- Individual Student Result Marksheet Card (Visible when single check succeeds) -->
+                <div class="card shadow-sm border-0 rounded-4 mb-4" id="individualResultCard" style="display: none;">
+                    <div class="card-header bg-primary text-white rounded-top-4 py-3 px-4 d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-patch-check-fill fs-5"></i>
+                            <h5 class="fw-bold mb-0">Education Board Result Marksheet</h5>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3" onclick="window.print()">
+                            <i class="bi bi-printer me-1"></i> Print
+                        </button>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row align-items-center mb-3 pb-3 border-bottom">
+                            <div class="col-sm-8">
+                                <h4 class="fw-bold text-dark mb-1" id="marksheetName">MD. TANVIR HASAN</h4>
+                                <div class="text-muted small">
+                                    <span id="marksheetExam">HSC</span> Examination - <span id="marksheetYear">2025</span> &bull; 
+                                    Board: <strong id="marksheetBoard">Cumilla</strong>
+                                </div>
+                            </div>
+                            <div class="col-sm-4 text-sm-end mt-2 mt-sm-0">
+                                <span class="badge bg-success-subtle text-success fs-7 px-3 py-2 border border-success-subtle d-inline-block mb-1" id="marksheetResultBadge">PASSED</span>
+                                <div class="fs-4 fw-bold text-primary">GPA: <span id="marksheetGpa">5.00</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Student Details Grid -->
+                        <div class="row g-2 mb-3 small bg-light p-3 rounded-3 border">
+                            <div class="col-6 col-md-3"><strong>Roll No:</strong> <span id="marksheetRoll">100101</span></div>
+                            <div class="col-6 col-md-3"><strong>Reg No:</strong> <span id="marksheetReg">1512345678</span></div>
+                            <div class="col-6 col-md-3"><strong>Group:</strong> <span id="marksheetGroup">SCIENCE</span></div>
+                            <div class="col-6 col-md-3"><strong>Type:</strong> <span id="marksheetType">REGULAR</span></div>
+                            <div class="col-12 col-md-6 mt-2"><strong>Father's Name:</strong> <span id="marksheetFather">-</span></div>
+                            <div class="col-12 col-md-6 mt-2"><strong>Mother's Name:</strong> <span id="marksheetMother">-</span></div>
+                            <div class="col-12 mt-2" id="marksheetInstituteRow" style="display: none;"><strong>Institute:</strong> <span id="marksheetInstitute">-</span></div>
+                        </div>
+
+                        <!-- Subject Wise Grades Table -->
+                        <h6 class="fw-bold text-secondary fs-7 mb-2">SUBJECT-WISE GRADE BREAKDOWN</h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-3">Subject</th>
+                                        <th class="text-center" style="width: 100px;">Grade</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="marksheetGradesBody">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress & Download Card (For Bulk Scraping) -->
+                <div class="card shadow-sm border-0 rounded-4 mb-4" id="progressCard" style="display: none;">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold text-dark fs-6" id="progressTitle">Scraping in progress...</span>
+                            <span class="badge bg-primary rounded-pill px-3 py-2" id="progressPercentBadge">0%</span>
+                        </div>
+                        <div class="progress mb-3" style="height: 12px;">
+                            <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0%;"></div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center text-muted small mb-3">
+                            <span id="statusMessage"><i class="bi bi-arrow-repeat spin me-1"></i> Initializing Playwright session...</span>
+                            <span id="studentCounter">0 / 0</span>
+                        </div>
+
+                        <!-- Download & Analysis Buttons -->
+                        <div class="d-flex flex-column gap-2 pt-2 border-top" id="downloadSection" style="display: none !important;">
+                            <div class="d-flex gap-2">
+                                <a id="downloadXlsxBtn" href="#" class="btn btn-success flex-fill rounded-3 fw-semibold shadow-sm">
+                                    <i class="bi bi-file-earmark-excel-fill me-1"></i> Download Excel (.xlsx)
+                                </a>
+                                <a id="downloadCsvBtn" href="#" class="btn btn-outline-secondary flex-fill rounded-3 fw-semibold shadow-sm">
+                                    <i class="bi bi-filetype-csv me-1"></i> Download CSV
+                                </a>
+                            </div>
+                            <button type="button" id="openAnalysisBtn" class="btn btn-primary w-100 py-2 rounded-3 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
+                                <i class="bi bi-bar-chart-steps fs-5"></i>
+                                <span>Result Analysis</span>
+                                <span class="badge bg-white text-primary rounded-pill px-2 py-1 fs-8 ms-1">Interactive</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Results Preview Table Card -->
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-header bg-white border-0 pt-4 px-4 pb-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-table text-primary fs-5"></i>
+                            <h5 class="fw-bold mb-0">Results Log & Preview</h5>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" id="headerAnalysisBtn" class="btn btn-primary btn-sm rounded-pill px-3 fw-semibold shadow-sm d-flex align-items-center gap-1">
+                                <i class="bi bi-bar-chart-fill"></i>
+                                <span>Result Analysis</span>
+                            </button>
+                            <span class="badge bg-secondary-subtle text-secondary px-3 py-2" id="resultsCount">0 Extracted</span>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height: 480px;">
+                            <table class="table table-hover align-middle mb-0 text-nowrap" id="resultsTable">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th class="ps-4">Roll</th>
+                                        <th>Reg</th>
+                                        <th>Name</th>
+                                        <th>GPA</th>
+                                        <th>Result</th>
+                                        <th class="pe-4">Subject Grades</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="resultsBody">
+                                    <tr id="emptyRow">
+                                        <td colspan="6" class="text-center py-5 text-muted">
+                                            <i class="bi bi-inbox fs-2 d-block mb-2 text-secondary opacity-50"></i>
+                                            No results fetched yet. Upload a CSV file or enter an individual Roll to check results.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Result Analysis Callout Card -->
+                <div class="card shadow-sm border-0 rounded-4 mt-4 bg-white" id="analysisCalloutCard">
+                    <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="brand-icon bg-primary text-white fs-4 p-3 rounded-3" style="width: 48px; height: 48px;">
+                                <i class="bi bi-bar-chart-line-fill"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold text-dark mb-1">Result Analysis & Breakdown</h5>
+                                <p class="text-muted small mb-0">
+                                    Subject Wise Grade Analysis, One Subject Fail with Subject, Two Subject Fail with Subject, and Excel export.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 w-100 w-md-auto justify-content-end">
+                            <button type="button" id="bottomAnalysisBtn" class="btn btn-primary px-4 py-2 rounded-3 fw-bold shadow-sm text-nowrap">
+                                <i class="bi bi-bar-chart-fill me-1"></i> Result Analysis
+                            </button>
+                            <button type="button" id="uploadFileForAnalysisBtn" class="btn btn-outline-secondary px-3 py-2 rounded-3 fw-semibold text-nowrap" title="Upload a previously exported result CSV or Excel file to analyze directly">
+                                <i class="bi bi-upload me-1"></i> Analyze File
+                            </button>
+                            <input type="file" id="analysisFileInput" accept=".csv, .xlsx, .xls" class="d-none">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Comprehensive Result Analysis Modal -->
+    <div class="modal fade" id="resultAnalysisModal" tabindex="-1" aria-labelledby="resultAnalysisModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content border-0 rounded-4 shadow-lg">
+                <!-- Modal Header -->
+                <div class="modal-header bg-dark-navy text-white py-3 px-4 rounded-top-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="brand-icon bg-primary text-white fs-5">
+                            <i class="bi bi-bar-chart-fill"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0" id="resultAnalysisModalLabel">Comprehensive Result Analysis</h5>
+                            <small class="text-secondary opacity-75" id="analysisMetaText">Subject Wise Grade Breakdown & Failure Analysis</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 ms-auto">
+                        <button type="button" id="printAnalysisBtn" class="btn btn-sm btn-outline-light rounded-pill px-3">
+                            <i class="bi bi-printer me-1"></i> Print Report
+                        </button>
+                        <a id="exportAnalysisExcelBtn" href="#" class="btn btn-sm btn-success rounded-pill px-3 fw-semibold">
+                            <i class="bi bi-file-earmark-excel-fill me-1"></i> Export Excel
+                        </a>
+                        <button type="button" class="btn-close btn-close-white ms-2" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="modal-body p-4 bg-light" id="analysisModalBody">
+                    
+                    <!-- KPI Summary Cards Row -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-6 col-md-3 col-lg-auto flex-fill">
+                            <div class="card border-0 shadow-sm rounded-3 p-3 bg-white text-center h-100">
+                                <span class="text-muted fs-8 fw-semibold text-uppercase">Total Appeared</span>
+                                <h3 class="fw-bold text-dark mt-1 mb-0" id="kpiAppeared">0</h3>
+                                <small class="text-secondary fs-8" id="kpiTotalStudents">0 Processed</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-auto flex-fill">
+                            <div class="card border-0 shadow-sm rounded-3 p-3 bg-white text-center h-100 border-start border-4 border-secondary">
+                                <span class="text-muted fs-8 fw-semibold text-uppercase">Total Absent</span>
+                                <h3 class="fw-bold text-dark mt-1 mb-0" id="kpiAbsent">0</h3>
+                                <small class="text-secondary fw-bold fs-8" id="kpiAbsentRate">0% Absent</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-auto flex-fill">
+                            <div class="card border-0 shadow-sm rounded-3 p-3 bg-white text-center h-100 border-start border-4 border-success">
+                                <span class="text-muted fs-8 fw-semibold text-uppercase">Total Passed</span>
+                                <h3 class="fw-bold text-success mt-1 mb-0" id="kpiPassed">0</h3>
+                                <small class="text-success fw-bold fs-8" id="kpiPassRate">0% Pass</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-auto flex-fill">
+                            <div class="card border-0 shadow-sm rounded-3 p-3 bg-white text-center h-100 border-start border-4 border-danger">
+                                <span class="text-muted fs-8 fw-semibold text-uppercase">Total Failed</span>
+                                <h3 class="fw-bold text-danger mt-1 mb-0" id="kpiFailed">0</h3>
+                                <small class="text-danger fw-bold fs-8" id="kpiFailRate">0% Fail</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-auto flex-fill">
+                            <div class="card border-0 shadow-sm rounded-3 p-3 bg-white text-center h-100 border-start border-4 border-warning" id="kpiGpa5Card">
+                                <span class="text-muted fs-8 fw-semibold text-uppercase" id="kpiGpa5Title">GPA 5.0 (With 4th)</span>
+                                <h3 class="fw-bold text-warning mt-1 mb-0" id="kpiGpa5">0</h3>
+                                <small class="text-secondary fs-8" id="kpiGpa5Rate">0% of Appeared</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-auto flex-fill">
+                            <div class="card border-0 shadow-sm rounded-3 p-3 bg-white text-center h-100 border-start border-4 border-primary">
+                                <span class="text-muted fs-8 fw-semibold text-uppercase">1 Sub Fail</span>
+                                <h3 class="fw-bold text-primary mt-1 mb-0" id="kpi1Fail">0</h3>
+                                <small class="text-primary fw-medium fs-8">1 Subject Only</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-auto flex-fill">
+                            <div class="card border-0 shadow-sm rounded-3 p-3 bg-white text-center h-100 border-start border-4 border-danger">
+                                <span class="text-muted fs-8 fw-semibold text-uppercase">2 Sub Fail</span>
+                                <h3 class="fw-bold text-danger mt-1 mb-0" id="kpi2Fail">0</h3>
+                                <small class="text-danger fw-medium fs-8">2 Subjects Only</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4th Subject Mode Selector Bar -->
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3 p-2.5 px-3 bg-white rounded-3 shadow-sm border" id="fourthSubjectBar">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-sliders2-vertical text-primary fs-5"></i>
+                            <span class="fw-bold small text-dark me-1">4th Subject Mode:</span>
+                            <div class="btn-group btn-group-sm" role="group" id="fourthSubjectModeGroup">
+                                <button type="button" class="btn btn-primary active" id="btnModeWith4th" data-mode="with_4th">
+                                    <i class="bi bi-check-circle-fill me-1"></i> With 4th Subject (Official)
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" id="btnModeWithout4th" data-mode="without_4th">
+                                    <i class="bi bi-star-fill text-warning me-1"></i> Without 4th Subject (Golden / Pure A+)
+                                </button>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <span class="badge bg-light text-dark border py-1.5 px-2.5" id="kpiGpa5BadgeWith4th">
+                                <i class="bi bi-award me-1 text-primary"></i> With 4th Sub: <strong id="kpiGpa5ValWith">0</strong> (<span id="kpiGpa5RateWith">0%</span>)
+                            </span>
+                            <span class="badge bg-warning-subtle text-dark border border-warning-subtle py-1.5 px-2.5" id="kpiGpa5BadgeWithout4th">
+                                <i class="bi bi-trophy-fill me-1 text-warning"></i> Without 4th Sub: <strong id="kpiGpa5ValWithout">0</strong> (<span id="kpiGpa5RateWithout">0%</span>)
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Regular vs Irregular KPI Quick Banner -->
+                    <div class="row g-3 mb-4" id="regIrregKpiBanner">
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm rounded-3 p-3 bg-white border-start border-4 border-primary">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-primary px-2.5 py-1 fw-bold">REGULAR CANDIDATES</span>
+                                        <span class="badge bg-primary-subtle text-primary" id="kpiRegularBadge">0 Students</span>
+                                    </div>
+                                    <span class="fw-bold text-primary fs-6" id="kpiRegularRate">0.00% Pass</span>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted small mt-2 flex-wrap gap-2">
+                                    <span>Passed: <strong class="text-success" id="kpiRegularPassed">0</strong></span>
+                                    <span>Failed: <strong class="text-danger" id="kpiRegularFailed">0</strong></span>
+                                    <span>Absent: <strong class="text-secondary" id="kpiRegularAbsent">0</strong></span>
+                                    <span>GPA 5.0: <strong class="text-warning" id="kpiRegularGpa5">0</strong></span>
+                                    <span>1-Sub Fail: <strong class="text-dark" id="kpiRegular1Fail">0</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm rounded-3 p-3 bg-white border-start border-4 border-warning">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-warning text-dark px-2.5 py-1 fw-bold">IRREGULAR CANDIDATES</span>
+                                        <span class="badge bg-warning-subtle text-dark" id="kpiIrregularBadge">0 Students</span>
+                                    </div>
+                                    <span class="fw-bold text-dark fs-6" id="kpiIrregularRate">0.00% Pass</span>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted small mt-2 flex-wrap gap-2">
+                                    <span>Passed: <strong class="text-success" id="kpiIrregularPassed">0</strong></span>
+                                    <span>Failed: <strong class="text-danger" id="kpiIrregularFailed">0</strong></span>
+                                    <span>Absent: <strong class="text-secondary" id="kpiIrregularAbsent">0</strong></span>
+                                    <span>GPA 5.0: <strong class="text-warning" id="kpiIrregularGpa5">0</strong></span>
+                                    <span>1-Sub Fail: <strong class="text-dark" id="kpiIrregular1Fail">0</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analysis Tabs -->
+                    <div class="card shadow-sm border-0 rounded-4 bg-white mb-2">
+                        <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
+                            <ul class="nav nav-tabs card-header-tabs" id="analysisTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active fw-semibold" id="tab-subj-grade" data-bs-toggle="tab" data-bs-target="#pane-subj-grade" type="button" role="tab">
+                                        <i class="bi bi-book-half me-1 text-primary"></i> Subject Wise Grade Analysis
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link fw-semibold" id="tab-reg-irreg" data-bs-toggle="tab" data-bs-target="#pane-reg-irreg" type="button" role="tab">
+                                        <i class="bi bi-people-fill me-1 text-primary"></i> Regular vs Irregular
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link fw-semibold" id="tab-1fail" data-bs-toggle="tab" data-bs-target="#pane-1fail" type="button" role="tab">
+                                        <i class="bi bi-exclamation-octagon-fill me-1 text-warning"></i> One Subject Fail <span class="badge bg-warning-subtle text-dark ms-1" id="badge1FailCount">0</span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link fw-semibold" id="tab-2fail" data-bs-toggle="tab" data-bs-target="#pane-2fail" type="button" role="tab">
+                                        <i class="bi bi-exclamation-triangle-fill me-1 text-danger"></i> Two Subject Fail <span class="badge bg-danger-subtle text-danger ms-1" id="badge2FailCount">0</span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link fw-semibold" id="tab-mfail" data-bs-toggle="tab" data-bs-target="#pane-mfail" type="button" role="tab">
+                                        <i class="bi bi-x-circle-fill me-1 text-secondary"></i> 3+ Subject Fail <span class="badge bg-secondary-subtle text-secondary ms-1" id="badgeMFailCount">0</span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link fw-semibold" id="tab-absent" data-bs-toggle="tab" data-bs-target="#pane-absent" type="button" role="tab">
+                                        <i class="bi bi-person-x-fill me-1 text-danger"></i> Absent Students <span class="badge bg-danger-subtle text-danger ms-1" id="badgeAbsentCount">0</span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link fw-semibold" id="tab-summary" data-bs-toggle="tab" data-bs-target="#pane-summary" type="button" role="tab">
+                                        <i class="bi bi-pie-chart-fill me-1 text-info"></i> Group & GPA Breakdown
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="card-body p-4 tab-content" id="analysisTabsContent">
+                            
+                            <!-- TAB 1: SUBJECT WISE GRADE ANALYSIS -->
+                            <div class="tab-pane fade show active" id="pane-subj-grade" role="tabpanel">
+                                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <label for="analysisGroupFilter" class="form-label fw-bold small text-secondary mb-0">GROUP:</label>
+                                        <select id="analysisGroupFilter" class="form-select form-select-sm" style="min-width: 170px;">
+                                            <option value="ALL">All Groups Combined</option>
+                                        </select>
+                                        <label for="analysisTypeFilter" class="form-label fw-bold small text-secondary mb-0 ms-md-2">TYPE:</label>
+                                        <select id="analysisTypeFilter" class="form-select form-select-sm" style="min-width: 150px;">
+                                            <option value="ALL">All Candidates</option>
+                                            <option value="REGULAR">Regular Only</option>
+                                            <option value="IRREGULAR">Irregular Only</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group input-group-sm" style="max-width: 280px;">
+                                        <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                                        <input type="text" id="analysisSubjectSearch" class="form-control" placeholder="Search subject name...">
+                                    </div>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover align-middle mb-0 text-center" id="subjectGradeTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="text-start ps-3">Subject Code & Name</th>
+                                                <th>Group</th>
+                                                <th>Type</th>
+                                                <th>Appeared</th>
+                                                <th>Passed</th>
+                                                <th>Failed</th>
+                                                <th style="min-width: 120px;">Pass Rate</th>
+                                                <th class="badge-gpa-gold">A+</th>
+                                                <th class="badge-gpa-green">A</th>
+                                                <th class="badge-gpa-green">A-</th>
+                                                <th class="badge-gpa-blue">B</th>
+                                                <th class="badge-gpa-blue">C</th>
+                                                <th>D</th>
+                                                <th class="badge-gpa-red">F</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="subjectGradeBody">
+                                            <!-- Rendered dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- TAB 2: ONE SUBJECT FAIL WITH SUBJECT -->
+                            <div class="tab-pane fade" id="pane-1fail" role="tabpanel">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="fw-bold small text-secondary text-uppercase">1-Subject Fail Breakdown by Subject (Click to filter):</span>
+                                        <span class="badge bg-primary-subtle text-primary" id="oneSubTotalSummary">0 Total Students</span>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 p-2 bg-light rounded-3 border" id="oneSubPillsContainer">
+                                        <!-- Dynamic pill badges: "English: 15", "ICT: 8", etc. -->
+                                    </div>
+                                </div>
+
+                                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+                                    <div class="small text-muted" id="oneSubFilteredNotice">Showing all 1-subject fail students</div>
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <div class="btn-group btn-group-sm" role="group" id="oneSubTypeButtons">
+                                            <button type="button" class="btn btn-dark active" data-type="ALL">All Types</button>
+                                            <button type="button" class="btn btn-outline-primary" data-type="REGULAR">Regular</button>
+                                            <button type="button" class="btn btn-outline-warning text-dark" data-type="IRREGULAR">Irregular</button>
+                                        </div>
+                                        <div class="input-group input-group-sm" style="max-width: 220px;">
+                                            <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                                            <input type="text" id="oneSubSearch" class="form-control" placeholder="Search roll, name...">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="table-responsive" style="max-height: 440px;">
+                                    <table class="table table-hover table-bordered align-middle mb-0" id="oneSubTable">
+                                        <thead class="table-light sticky-top">
+                                            <tr>
+                                                <th class="ps-3" style="width: 110px;">Roll No</th>
+                                                <th style="width: 120px;">Reg No</th>
+                                                <th>Student Name</th>
+                                                <th>Group</th>
+                                                <th style="width: 110px;">Type</th>
+                                                <th>Failed Subject (F)</th>
+                                                <th>Passed Subject Grades</th>
+                                                <th class="text-center">Status / Remarks</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="oneSubTableBody">
+                                            <!-- Rendered dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- TAB 3: TWO SUBJECT FAIL WITH SUBJECT -->
+                            <div class="tab-pane fade" id="pane-2fail" role="tabpanel">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="fw-bold small text-secondary text-uppercase">Two-Subject Fail - Failed Subjects Breakdown (Click to filter):</span>
+                                        <span class="badge bg-danger-subtle text-danger" id="twoSubTotalSummary">0 Total Students</span>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 p-2 bg-light rounded-3 border" id="twoSubPillsContainer">
+                                        <!-- Dynamic pill badges -->
+                                    </div>
+                                </div>
+
+                                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+                                    <div class="small text-muted" id="twoSubFilteredNotice">Showing all 2-subject fail students</div>
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <div class="btn-group btn-group-sm" role="group" id="twoSubTypeButtons">
+                                            <button type="button" class="btn btn-dark active" data-type="ALL">All Types</button>
+                                            <button type="button" class="btn btn-outline-primary" data-type="REGULAR">Regular</button>
+                                            <button type="button" class="btn btn-outline-warning text-dark" data-type="IRREGULAR">Irregular</button>
+                                        </div>
+                                        <div class="input-group input-group-sm" style="max-width: 220px;">
+                                            <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                                            <input type="text" id="twoSubSearch" class="form-control" placeholder="Search roll, name...">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="table-responsive" style="max-height: 440px;">
+                                    <table class="table table-hover table-bordered align-middle mb-0" id="twoSubTable">
+                                        <thead class="table-light sticky-top">
+                                            <tr>
+                                                <th class="ps-3" style="width: 110px;">Roll No</th>
+                                                <th style="width: 120px;">Reg No</th>
+                                                <th>Student Name</th>
+                                                <th>Group</th>
+                                                <th style="width: 110px;">Type</th>
+                                                <th>Failed Subjects (2)</th>
+                                                <th>Passed Subject Grades</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="twoSubTableBody">
+                                            <!-- Rendered dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- TAB 4: 3+ SUBJECT FAIL -->
+                            <div class="tab-pane fade" id="pane-mfail" role="tabpanel">
+                                <div class="alert alert-secondary py-2 px-3 small d-flex justify-content-between align-items-center mb-3">
+                                    <span>Students failing in 3 or more subjects</span>
+                                    <span class="badge bg-secondary" id="multiSubTotalSummary">0 Students</span>
+                                </div>
+                                <div class="table-responsive" style="max-height: 440px;">
+                                    <table class="table table-hover table-bordered align-middle mb-0">
+                                        <thead class="table-light sticky-top">
+                                            <tr>
+                                                <th class="ps-3" style="width: 110px;">Roll No</th>
+                                                <th>Student Name</th>
+                                                <th>Group</th>
+                                                <th style="width: 110px;">Type</th>
+                                                <th class="text-center" style="width: 130px;">Fails Count</th>
+                                                <th>Failed Subjects</th>
+                                                <th>Passed Subject Grades</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="multiSubTableBody">
+                                            <!-- Rendered dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- TAB: REGULAR VS IRREGULAR ANALYSIS -->
+                            <div class="tab-pane fade" id="pane-reg-irreg" role="tabpanel">
+                                <!-- Comparison Cards Row -->
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-6">
+                                        <div class="card border-0 shadow-sm rounded-4 p-4 bg-light border-start border-4 border-primary h-100">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <span class="badge bg-primary px-3 py-2 fw-bold fs-7">REGULAR CANDIDATES</span>
+                                                <span class="badge bg-primary-subtle text-primary fs-7" id="cardRegCount">0 Students</span>
+                                            </div>
+                                            <div class="row g-2 text-center mb-3">
+                                                <div class="col-4">
+                                                    <div class="p-2 bg-white rounded-3 border">
+                                                        <small class="text-muted d-block fs-8">Appeared</small>
+                                                        <strong class="fs-6" id="cardRegAppeared">0</strong>
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="p-2 bg-white rounded-3 border">
+                                                        <small class="text-muted d-block fs-8">Passed</small>
+                                                        <strong class="fs-6 text-success" id="cardRegPassed">0</strong>
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="p-2 bg-white rounded-3 border">
+                                                        <small class="text-muted d-block fs-8">Pass Rate</small>
+                                                        <strong class="fs-6 text-primary" id="cardRegPassRate">0%</strong>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex justify-content-between text-muted small border-top pt-2">
+                                                <span>Failed: <strong class="text-danger" id="cardRegFailed">0</strong></span>
+                                                <span>GPA 5.0: <strong class="text-warning" id="cardRegGpa5">0</strong></span>
+                                                <span>1-Sub Fail: <strong class="text-dark" id="cardReg1Fail">0</strong></span>
+                                                <span>2-Sub Fail: <strong class="text-dark" id="cardReg2Fail">0</strong></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="card border-0 shadow-sm rounded-4 p-4 bg-light border-start border-4 border-warning h-100">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <span class="badge bg-warning text-dark px-3 py-2 fw-bold fs-7">IRREGULAR CANDIDATES</span>
+                                                <span class="badge bg-warning-subtle text-dark fs-7" id="cardIrregCount">0 Students</span>
+                                            </div>
+                                            <div class="row g-2 text-center mb-3">
+                                                <div class="col-4">
+                                                    <div class="p-2 bg-white rounded-3 border">
+                                                        <small class="text-muted d-block fs-8">Appeared</small>
+                                                        <strong class="fs-6" id="cardIrregAppeared">0</strong>
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="p-2 bg-white rounded-3 border">
+                                                        <small class="text-muted d-block fs-8">Passed</small>
+                                                        <strong class="fs-6 text-success" id="cardIrregPassed">0</strong>
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="p-2 bg-white rounded-3 border">
+                                                        <small class="text-muted d-block fs-8">Pass Rate</small>
+                                                        <strong class="fs-6 text-dark" id="cardIrregPassRate">0%</strong>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex justify-content-between text-muted small border-top pt-2">
+                                                <span>Failed: <strong class="text-danger" id="cardIrregFailed">0</strong></span>
+                                                <span>GPA 5.0: <strong class="text-warning" id="cardIrregGpa5">0</strong></span>
+                                                <span>1-Sub Fail: <strong class="text-dark" id="cardIrreg1Fail">0</strong></span>
+                                                <span>2-Sub Fail: <strong class="text-dark" id="cardIrreg2Fail">0</strong></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Overall Type Comparison Table -->
+                                <h6 class="fw-bold text-secondary fs-7 text-uppercase mb-2">Overall Candidate Type Performance</h6>
+                                <div class="table-responsive mb-4">
+                                    <table class="table table-bordered table-hover align-middle mb-0 text-center">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="text-start ps-3">Candidate Type</th>
+                                                <th>Total</th>
+                                                <th>Appeared</th>
+                                                <th>Passed</th>
+                                                <th>Failed</th>
+                                                <th>Pass %</th>
+                                                <th>GPA 5.0</th>
+                                                <th>1-Sub Fail</th>
+                                                <th>2-Sub Fail</th>
+                                                <th>3+ Sub Fail</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="typeSummaryTableBody">
+                                            <!-- Rendered dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Group x Candidate Type Breakdown Table -->
+                                <h6 class="fw-bold text-secondary fs-7 text-uppercase mb-2">Group-Wise Regular vs Irregular Breakdown</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover align-middle mb-0 text-center">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="text-start ps-3">Group Name</th>
+                                                <th>Candidate Type</th>
+                                                <th>Total</th>
+                                                <th>Appeared</th>
+                                                <th>Passed</th>
+                                                <th>Failed</th>
+                                                <th>Pass %</th>
+                                                <th>GPA 5.0</th>
+                                                <th>1-Sub Fail</th>
+                                                <th>2-Sub Fail</th>
+                                                <th>3+ Sub Fail</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="groupTypeComparisonTableBody">
+                                            <!-- Rendered dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- TAB 5: GROUP COMPARISON & GPA BREAKDOWN -->
+                            <div class="tab-pane fade" id="pane-summary" role="tabpanel">
+                                <h6 class="fw-bold text-secondary fs-7 text-uppercase mb-2">Group Performance Comparison</h6>
+                                <div class="table-responsive mb-4">
+                                    <table class="table table-bordered table-hover align-middle mb-0 text-center">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="text-start ps-3">Group</th>
+                                                <th>Total</th>
+                                                <th>Appeared</th>
+                                                <th>Absent</th>
+                                                <th>Passed</th>
+                                                <th>Failed</th>
+                                                <th>Pass %</th>
+                                                <th class="badge-gpa-gold">GPA 5 (With 4th)</th>
+                                                <th class="text-primary fw-bold">GPA 5 (Without 4th)</th>
+                                                <th>1-Sub Fail</th>
+                                                <th>2-Sub Fail</th>
+                                                <th>3+ Sub Fail</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="groupSummaryTableBody">
+                                            <!-- Rendered dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="fw-bold text-secondary fs-7 text-uppercase mb-0">GPA Tier Distribution</h6>
+                                    <small class="text-muted" id="gpaDistModeNotice"><i class="bi bi-info-circle me-1"></i>Showing: With 4th Subject Mode</small>
+                                </div>
+                                <div class="row g-2" id="gpaDistributionRow">
+                                    <!-- Dynamic GPA cards -->
+                                </div>
+                            </div>
+
+                            <!-- TAB 6: ABSENT STUDENTS ANALYSIS -->
+                            <div class="tab-pane fade" id="pane-absent" role="tabpanel">
+                                <!-- Absent KPI Row -->
+                                <div class="row g-3 mb-4">
+                                    <div class="col-6 col-md-3">
+                                        <div class="card border-0 shadow-sm rounded-3 p-3 bg-light text-center h-100 border-start border-4 border-secondary">
+                                            <span class="text-muted fs-8 fw-semibold text-uppercase">Total Absent</span>
+                                            <h3 class="fw-bold text-dark mt-1 mb-0" id="absentPaneTotal">0</h3>
+                                            <small class="text-secondary fs-8" id="absentPaneRate">0.00% of Total</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <div class="card border-0 shadow-sm rounded-3 p-3 bg-light text-center h-100 border-start border-4 border-primary">
+                                            <span class="text-muted fs-8 fw-semibold text-uppercase">Regular Absent</span>
+                                            <h3 class="fw-bold text-primary mt-1 mb-0" id="absentPaneRegular">0</h3>
+                                            <small class="text-muted fs-8" id="absentPaneRegularRate">0.00%</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <div class="card border-0 shadow-sm rounded-3 p-3 bg-light text-center h-100 border-start border-4 border-warning">
+                                            <span class="text-muted fs-8 fw-semibold text-uppercase">Irregular Absent</span>
+                                            <h3 class="fw-bold text-dark mt-1 mb-0" id="absentPaneIrregular">0</h3>
+                                            <small class="text-muted fs-8" id="absentPaneIrregularRate">0.00%</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <div class="card border-0 shadow-sm rounded-3 p-3 bg-light text-center h-100 border-start border-4 border-success">
+                                            <span class="text-muted fs-8 fw-semibold text-uppercase">Total Appeared</span>
+                                            <h3 class="fw-bold text-success mt-1 mb-0" id="absentPaneAppeared">0</h3>
+                                            <small class="text-success fs-8">Attended Exam</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Group-wise Absent Breakdown Table -->
+                                <h6 class="fw-bold text-secondary fs-7 text-uppercase mb-2">Group-Wise Absent Breakdown</h6>
+                                <div class="table-responsive mb-4">
+                                    <table class="table table-bordered table-hover align-middle mb-0 text-center">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="text-start ps-3">Group Name</th>
+                                                <th>Total Registered</th>
+                                                <th>Appeared</th>
+                                                <th>Absent Count</th>
+                                                <th>Absent Rate (%)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="absentGroupTableBody">
+                                            <!-- Rendered dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Absent Students Roster Header and Filters -->
+                                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+                                    <div class="small text-muted" id="absentFilteredNotice">Showing all absent students</div>
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <div class="btn-group btn-group-sm" role="group" id="absentTypeButtons">
+                                            <button type="button" class="btn btn-dark active" data-type="ALL">All Types</button>
+                                            <button type="button" class="btn btn-outline-primary" data-type="REGULAR">Regular</button>
+                                            <button type="button" class="btn btn-outline-warning text-dark" data-type="IRREGULAR">Irregular</button>
+                                        </div>
+                                        <div class="input-group input-group-sm" style="max-width: 220px;">
+                                            <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                                            <input type="text" id="absentSearch" class="form-control" placeholder="Search roll, name...">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Absent Student Roster Table -->
+                                <div class="table-responsive" style="max-height: 440px;">
+                                    <table class="table table-hover table-bordered align-middle mb-0" id="absentTable">
+                                        <thead class="table-light sticky-top">
+                                            <tr>
+                                                <th class="ps-3" style="width: 110px;">Roll No</th>
+                                                <th style="width: 120px;">Reg No</th>
+                                                <th>Student Name</th>
+                                                <th>Father's Name</th>
+                                                <th>Group</th>
+                                                <th style="width: 110px;">Type</th>
+                                                <th>Institute</th>
+                                                <th class="text-center" style="width: 110px;">Status</th>
+                                                <th>Remarks</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="absentTableBody">
+                                            <!-- Rendered dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+                
+                <div class="modal-footer bg-white border-top py-2 px-4">
+                    <span class="text-muted small me-auto">
+                        <i class="bi bi-shield-check text-success me-1"></i> Result data analyzed across marksheet records
+                    </span>
+                    <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer mt-auto py-3 text-center text-muted border-top bg-white">
+        <div class="container small">
+            <span>Bangladesh SSC/HSC Result Extractor &bull; Built with FastAPI, Playwright & Pandas</span>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

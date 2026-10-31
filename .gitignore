@@ -1,0 +1,43 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# User Exported Result Files (contain student marksheet data)
+exports/*
+!exports/.gitkeep
+
+# Temporary Upload Files
+uploads/*
+!uploads/.gitkeep
+
+# Operating System files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp
+*.log
+
+# Environment variables & secrets
+.env
+*.local
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test & Coverage artifacts
+.pytest_cache/
+.coverage
+htmlcov/
